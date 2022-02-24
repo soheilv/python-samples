@@ -1,4 +1,5 @@
-"""Copyright 2018 Google LLC
+"""
+Copyright 2022 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -9,21 +10,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-# [START gmail_insert_smime_info]
+# [START drive_fetch_start_page_token]
 
 from __future__ import print_function
 
-import create_smime_info
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 
-def insert_smime_info():
-    """Upload an S/MIME certificate for the user.
-    Print the inserted certificate's id
-    Returns : Result object with inserted certificate id and other meta-data
-
+def fetch_start_page_token():
+    """Retrieve page token for the current state of the account.
+    Returns & prints : start page token
     Load pre-authorized user credentials from the environment.
     TODO(developer) - See https://developers.google.com/identity
     for guides on implementing OAuth2 for the application.
@@ -32,28 +30,19 @@ def insert_smime_info():
 
     try:
         # create gmail api client
-        service = build('gmail', 'v1', credentials=creds)
-
-        user_id = 'gduser1@workspacesamples.dev'
-        smime_info = create_smime_info.create_smime_info(cert_filename='xyz', cert_password='xyz')
-        send_as_email = None
-
-        if not send_as_email:
-            send_as_email = user_id
+        service = build('drive', 'v2', credentials=creds)
 
         # pylint: disable=maybe-no-member
-        results = service.users().settings().sendAs().smimeInfo().\
-            insert(userId=user_id, sendAsEmail=send_as_email, body=smime_info)\
-            .execute()
-        print(F'Inserted certificate; id: {results["id"]}')
+        response = service.changes().getStartPageToken().execute()
+        print(F'Start token: {response.get("startPageToken")}')
 
     except HttpError as error:
         print(F'An error occurred: {error}')
-        results = None
+        response = None
 
-    return results
+    return response.get('startPageToken')
 
 
 if __name__ == '__main__':
-    insert_smime_info()
-# [END gmail_insert_smime_info]
+    fetch_start_page_token()
+# [End drive_fetch_start_page_token]
